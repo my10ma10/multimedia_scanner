@@ -1,1 +1,6 @@
-# multimedia_scanner
+# Сканер мультимедийных файлов
+
+## Структура
+- MediaScanner
+- 
+
