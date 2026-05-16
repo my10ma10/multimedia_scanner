@@ -2,7 +2,7 @@
 #include <iostream>
 
 HttpServer::HttpServer(nlohmann::json& j, int port) 
-    : json_(j), port_(port)
+    : json_data_(j), port_(port)
 {
 }
 
@@ -30,6 +30,7 @@ void HttpServer::start() {
             return;
         }
 
+        std::cout << "get request\n";
         if (request->find("GET /media_files") != std::string::npos) {
             socket_.send(createResponse());
         }
@@ -45,9 +46,9 @@ std::string HttpServer::createResponse() {
     std::string response = 
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: json\r\n"
-            "Content-Length: " + std::to_string(json_.size()) + "\r\n"
+            "Content-Length: " + std::to_string(json_data_.size()) + "\r\n"
             "Connection: close\r\n"
             "\r\n"
-            + json_.dump(4);
+            + json_data_.dump(4);
     return response;
 }

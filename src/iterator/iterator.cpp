@@ -20,9 +20,12 @@ void Iterator::iterate() {
             continue;
         }
 
-        for (const std::string& media_ext : file_extencions) {
-            if (entry.path().extension() == media_ext) {
-                std::cout << entry.path() << std::endl;
+        for (const auto& media_list : reporter_.getExtensions()) {
+            for (const std::string& media_ext : media_list) {
+                if (entry.path().extension() == media_ext) {
+                    // std::cout << entry.path() << std::endl;
+                    reporter_.saveReport(entry.path());
+                }
             }
         }
     }
