@@ -3,13 +3,15 @@
 #include <filesystem>
 #include <vector>
 
+#include "json_reporter/json_reporter.hpp"
+
 inline std::vector<std::string> file_extencions = {".mp3", ".wav", ".mp4", ".jpg", ".png"};
 
 namespace fs = std::filesystem;
 
 class Iterator {
 private:
-    // JsonReporter reporter_;
+    JsonReporter reporter_;
 
     fs::path dir_path_;
 

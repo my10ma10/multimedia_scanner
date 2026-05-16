@@ -5,6 +5,15 @@ add_library(iterator STATIC
     iterator/iterator.cpp
 )
 
+add_library(json_reporter STATIC
+    json_reporter/json_reporter.hpp
+    json_reporter/json_reporter.cpp
+)
+target_link_libraries(json_reporter PUBLIC
+    nlohmann_json_lib
+)
+
+
 add_executable(scanner 
     scanner/scanner.hpp
     scanner/scanner.cpp
