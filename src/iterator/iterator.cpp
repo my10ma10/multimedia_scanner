@@ -15,6 +15,8 @@ Iterator::Iterator(const std::string& dir_path) {
 
 void Iterator::iterate() {
     std::cout << "Iterating media files...: \n";
+    reporter_.clearJsonData();
+
     for (const auto& entry : fs::recursive_directory_iterator(dir_path_)) {
         if (!entry.is_regular_file()) {
             continue;

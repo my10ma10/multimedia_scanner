@@ -119,27 +119,26 @@ std::optional<ssize_t> Socket::send(
     return total_sent;
 }
 
-std::optional<std::string> Socket::recv() {
-    if (!isActive()) {
-        return std::nullopt;
-    }
-
-    std::vector<char> recv_buf(BUF_SIZE, 0);
-    std::size_t total_received = 0;
-
-    while (total_received < BUF_SIZE) {
-        ssize_t received = ::recv(_socket_fd, 
-            recv_buf.data() + total_received, BUF_SIZE - total_received, 0);
+std::optional<std::string> Socket::recv_http_header() {
+    if (!isActive()) return std::nullopt;
+    
+    std::string result;
+    std::vector<char> buffer(512);
+    
+    while (result.size() < BUF_SIZE) {
+        ssize_t received = ::recv(_socket_fd, buffer.data(), buffer.size(), 0);
         if (received == -1) {
             std::perror("recv error");
             return std::nullopt;
         }
-        else if (received == 0) {
-            break;
+        if (received == 0) break;
+        
+        result.append(buffer.data(), received);
+        if (result.find("\r\n\r\n") != std::string::npos) {
+            return result;
         }
-        total_received += received;
     }
-    return std::string(recv_buf.begin(), recv_buf.begin() + total_received);
+    return std::nullopt;
 }
 
 void Socket::close() {    

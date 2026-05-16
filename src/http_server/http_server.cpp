@@ -21,10 +21,10 @@ void HttpServer::start() {
     while (true) {
         auto client_socket = socket_.accept();
         if (!client_socket) {
-            return;
+            continue;
         }
 
-        auto request = socket_.recv();
+        auto request = client_socket->recv_http_header();
         if (!request) {
             std::cerr << "Received empty request\n";
             return;
@@ -32,7 +32,7 @@ void HttpServer::start() {
 
         std::cout << "get request\n";
         if (request->find("GET /media_files") != std::string::npos) {
-            socket_.send(createResponse());
+            client_socket->send(createResponse());
         }
     }
 
@@ -43,12 +43,12 @@ void HttpServer::close() {
 }
 
 std::string HttpServer::createResponse() {
+    std::string body = json_data_.dump(4);
     std::string response = 
             "HTTP/1.1 200 OK\r\n"
-            "Content-Type: json\r\n"
-            "Content-Length: " + std::to_string(json_data_.size()) + "\r\n"
+            "Content-Type: application/json\r\n"
+            "Content-Length: " + std::to_string(body.size()) + "\r\n"
             "Connection: close\r\n"
-            "\r\n"
-            + json_data_.dump(4);
+            + body;
     return response;
 }

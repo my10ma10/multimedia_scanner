@@ -12,7 +12,7 @@ JsonReporter::JsonReporter() : server_(json_data_) {
         server_.start();
     });
 
-    server_thread.join();
+    server_thread.detach();
 }
 
 void JsonReporter::saveReport(const fs::path& path) {
@@ -28,6 +28,10 @@ void JsonReporter::saveReport(const fs::path& path) {
     else {
         throw std::runtime_error(path.string() + "cannot be saved in json data");
     }
+}
+
+void JsonReporter::clearJsonData() {
+    json_data_.clear();
 }
 
 bool JsonReporter::isAudio(const fs::path& file_extension) const {

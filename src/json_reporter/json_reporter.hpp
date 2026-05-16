@@ -19,6 +19,8 @@ public:
 
     void saveReport(const fs::path& path);
 
+    void clearJsonData();
+
     nlohmann::json getExtensions() const { return extensions_; }
 
 private:

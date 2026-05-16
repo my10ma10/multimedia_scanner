@@ -37,7 +37,7 @@ public:
 
     std::optional<ssize_t> send(const std::string &msg) const;
     std::optional<ssize_t> send(const void *data, const std::size_t size) const;
-    std::optional<std::string> recv();
+    std::optional<std::string> recv_http_header();
 
     void close();
     void shutdown();
