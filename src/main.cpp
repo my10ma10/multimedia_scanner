@@ -9,8 +9,8 @@ void signal_handler(int) {
 }
 
 int main(int argc, char* argv[]) {
-    // std::signal(SIGINT, signal_handler);
-    // std::signal(SIGTERM, signal_handler);
+    std::signal(SIGINT, signal_handler);
+    std::signal(SIGTERM, signal_handler);
 
     if (argc < 3) {
         std::cout << "Too few arguments\n";

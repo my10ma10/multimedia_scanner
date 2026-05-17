@@ -19,6 +19,10 @@ void Scanner::scan() {
         iterator_.iterate();
         
         std::cout << "Waiting for " << sec_period_ << " seconds...\n";
-        std::this_thread::sleep_until(start_time + ch::seconds(sec_period_));
+        // std::this_thread::sleep_until(start_time + ch::seconds(sec_period_));
+        auto wake_time = ch::steady_clock::now() + ch::seconds(sec_period_);
+        while (g_running && ch::steady_clock::now() < wake_time) {
+            std::this_thread::sleep_for(ch::milliseconds(100));
+        }
     }
 }

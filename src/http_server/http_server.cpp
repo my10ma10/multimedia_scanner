@@ -25,10 +25,7 @@ void HttpServer::start() {
     while (g_running) {
         auto client_socket = listen_socket_->accept();
         if (!client_socket) {
-            if (!g_running) {
-                break;
-            }
-            continue;
+            break;
         }
 
         std::thread([sock = std::move(*client_socket), this]() mutable {
@@ -47,12 +44,14 @@ void HttpServer::start() {
 void HttpServer::stop() {
     if (listen_socket_) {
         listen_socket_->close();
-        listen_socket_.reset();
     }
 }
 
 void HttpServer::close() {
-    listen_socket_->close();
+    if (listen_socket_) { 
+        listen_socket_->close();
+        listen_socket_.reset();
+    }
 }
 
 std::string HttpServer::createResponse() {

@@ -88,6 +88,9 @@ std::optional<Socket> Socket::accept() const {
 
     int client_fd = ::accept(_socket_fd, (struct sockaddr*)&client_info, &info_size);
     if (client_fd == -1) {
+        if (errno == EBADF || errno == EINVAL || errno == EINTR) {
+            return std::nullopt;
+        }
         std::perror("accept error");
         return std::nullopt;
     }

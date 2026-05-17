@@ -13,6 +13,7 @@ JsonReporter::JsonReporter() : server_(json_data_, json_mutex_) {
 }
 
 JsonReporter::~JsonReporter() {
+    server_.stop();
     if (server_thread_.joinable()) {
         server_thread_.join();
     }
