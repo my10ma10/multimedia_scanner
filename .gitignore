@@ -68,3 +68,5 @@ vcpkg_installed/
 Testing/
 .cache/
 test_dir
+media_files.json
+.media_files.json

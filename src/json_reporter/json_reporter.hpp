@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <unordered_set>
 #include <nlohmann/json.hpp>
 #include "http_server/http_server.hpp"
 
@@ -12,7 +13,9 @@ private:
     fs::path report_file_;
 
     nlohmann::json json_data_;
-    nlohmann::json extensions_;
+    nlohmann::json extensions_json_;
+
+    std::unordered_set<std::string> extensions_set_;
 
 public:
     JsonReporter();
@@ -21,8 +24,8 @@ public:
 
     void clearJsonData();
 
-    nlohmann::json getExtensions() const { return extensions_; }
-
+    bool isValidExtension(const std::string& ext) const;
+    
 private:
     bool isAudio(const fs::path& file_extension) const;
     bool isVideo(const fs::path& file_extension) const;
@@ -33,4 +36,5 @@ private:
     nlohmann::json readExtensions(
         const std::string& filepath = "multimedia_extensions.json"
     );
+    void validateExtensionSet();
 };

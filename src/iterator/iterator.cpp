@@ -20,15 +20,10 @@ void Iterator::iterate() {
         if (!entry.is_regular_file()) {
             continue;
         }
-
-        for (const auto& media_list : reporter_.getExtensions()) {
-            for (const std::string& media_ext : media_list) {
-                if (entry.path().extension() == media_ext) {
-                    // std::cout << entry.path() << std::endl;
-                    reporter_.saveReport(entry.path());
-                }
-            }
+        if (reporter_.isValidExtension(entry.path().extension().string())) {
+            reporter_.saveReport(entry.path());
         }
+            
     }
     std::cout << "Iteration completed successfully\n";
 }
