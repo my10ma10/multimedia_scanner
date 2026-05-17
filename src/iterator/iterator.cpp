@@ -10,7 +10,6 @@ Iterator::Iterator(const std::string& dir_path) {
     else {
         dir_path_ = dir_path;
     }
-    dir_path_ /= "Dev/Personal";
 }
 
 void Iterator::iterate() {

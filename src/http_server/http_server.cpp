@@ -1,5 +1,9 @@
 #include "http_server.hpp"
 #include <iostream>
+#include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 HttpServer::HttpServer(nlohmann::json& j, int port) 
     : json_data_(j), port_(port)
@@ -24,16 +28,19 @@ void HttpServer::start() {
             continue;
         }
 
-        auto request = client_socket->recv_http_header();
-        if (!request) {
-            std::cerr << "Received empty request\n";
-            return;
-        }
+        std::thread http_client_thread([sock = std::move(*client_socket), this]() mutable {
+            auto request = sock.recv_http_header();
+            if (!request) {
+                return;
+            }
+            if (request->find("GET /media_files") != std::string::npos) {
+                auto response = createResponse();
+                sock.send(response);
+            }
+        });
+        
+        http_client_thread.detach();
 
-        std::cout << "get request\n";
-        if (request->find("GET /media_files") != std::string::npos) {
-            client_socket->send(createResponse());
-        }
     }
 
 }
@@ -49,6 +56,7 @@ std::string HttpServer::createResponse() {
             "Content-Type: application/json\r\n"
             "Content-Length: " + std::to_string(body.size()) + "\r\n"
             "Connection: close\r\n"
+            "\r\n"
             + body;
     return response;
 }

@@ -141,9 +141,19 @@ std::optional<std::string> Socket::recv_http_header() {
     return std::nullopt;
 }
 
+void Socket::drain() {
+    if (!isActive()) return;
+
+    char buf[512];
+    while (true) {
+        ssize_t n = ::recv(_socket_fd, buf, sizeof(buf), 0);
+        if (n <= 0) break;
+    }
+}
+
 void Socket::close() {    
     if (isActive()) {     
-        Socket::shutdown();   
+        Socket::shutdown(SHUT_RDWR);   
         ::close(_socket_fd);
         _socket_fd = -1;
     }
@@ -153,8 +163,8 @@ void Socket::close() {
     }
 }
 
-void Socket::shutdown() {
-    if (::shutdown(_socket_fd, SHUT_RDWR) == -1) {
+void Socket::shutdown(int status) {
+    if (::shutdown(_socket_fd, status) == -1) {
         if (errno != ENOTCONN) {
             std::perror("socket shutdown error");
         }
