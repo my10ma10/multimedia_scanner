@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <pwd.h>
 
-JsonReporter::JsonReporter() : server_(json_data_) {
+JsonReporter::JsonReporter() : server_(json_data_, json_mutex_) {
     report_file_ = getpwuid(getuid())->pw_dir;
     validateExtensionSet();
     
@@ -19,6 +19,7 @@ JsonReporter::~JsonReporter() {
 }
 
 void JsonReporter::saveReport(const fs::path& path) {
+    std::scoped_lock lock(json_mutex_);
     if (isAudio(path.extension())) {
         json_data_["audio"].push_back(path);
     }

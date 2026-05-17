@@ -16,6 +16,7 @@ private:
     fs::path report_file_;
 
     nlohmann::json json_data_;
+    mutable std::mutex json_mutex_;
 
     std::unordered_map<std::string, std::string> extensions_;
 

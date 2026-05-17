@@ -1,12 +1,11 @@
 #include "http_server.hpp"
 #include <iostream>
-#include <thread>
 #include <chrono>
 
 using namespace std::chrono_literals;
 
-HttpServer::HttpServer(nlohmann::json& j, int port) 
-    : json_data_(j), port_(port)
+HttpServer::HttpServer(nlohmann::json& j, std::mutex& mtx, int port) 
+    : json_data_(j), json_mutex_(mtx), port_(port)
 {
 }
 
@@ -15,20 +14,24 @@ HttpServer::~HttpServer() {
 }
 
 void HttpServer::start() {
-    if (!socket_.bind(std::to_string(port_))) {
+    listen_socket_ = std::make_unique<Socket>();
+    if (!listen_socket_->bind(std::to_string(port_))) {
         return;
     }
-    if (!socket_.listen(10)) {
+    if (!listen_socket_->listen(10)) {
         return;
     }
 
-    while (true) {
-        auto client_socket = socket_.accept();
+    while (g_running) {
+        auto client_socket = listen_socket_->accept();
         if (!client_socket) {
+            if (!g_running) {
+                break;
+            }
             continue;
         }
 
-        std::thread http_client_thread([sock = std::move(*client_socket), this]() mutable {
+        std::thread([sock = std::move(*client_socket), this]() mutable {
             auto request = sock.recv_http_header();
             if (!request) {
                 return;
@@ -37,20 +40,27 @@ void HttpServer::start() {
                 auto response = createResponse();
                 sock.send(response);
             }
-        });
-        
-        http_client_thread.detach();
-
+        }).detach();
     }
+}
 
+void HttpServer::stop() {
+    if (listen_socket_) {
+        listen_socket_->close();
+        listen_socket_.reset();
+    }
 }
 
 void HttpServer::close() {
-    socket_.close();
+    listen_socket_->close();
 }
 
 std::string HttpServer::createResponse() {
-    std::string body = json_data_.dump(4);
+    std::string body;
+    {
+        std::scoped_lock lock(json_mutex_);
+        body = json_data_.dump(4);
+    }
     std::string response = 
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: application/json\r\n"
