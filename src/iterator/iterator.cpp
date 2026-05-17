@@ -13,7 +13,7 @@ Iterator::Iterator(const std::string& dir_path) {
 }
 
 void Iterator::iterate() {
-    std::cout << "Iterating media files...: \n";
+    std::cout << "Iterating media files... \n";
     reporter_.clearJsonData();
 
     for (const auto& entry : fs::recursive_directory_iterator(dir_path_)) {

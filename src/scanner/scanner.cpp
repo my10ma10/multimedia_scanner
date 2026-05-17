@@ -14,7 +14,7 @@ Scanner::Scanner(int sec_period, const std::string& dir_path)
 void Scanner::scan() {
     auto start_time = ch::steady_clock::now();
 
-    while (true) {
+    while (g_running) {
         start_time = ch::steady_clock::now();
         iterator_.iterate();
         

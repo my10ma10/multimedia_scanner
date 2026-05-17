@@ -1,20 +1,21 @@
 #include "json_reporter.hpp"
 #include <fstream>
-#include <iostream>
-#include <thread>
 #include <unistd.h>
 #include <pwd.h>
 
 JsonReporter::JsonReporter() : server_(json_data_) {
     report_file_ = getpwuid(getuid())->pw_dir;
-    extensions_json_ = readExtensions();
     validateExtensionSet();
     
-    std::thread server_thread([this]() {
+    server_thread_ = std::thread([this]() {
         server_.start();
     });
+}
 
-    server_thread.detach();
+JsonReporter::~JsonReporter() {
+    if (server_thread_.joinable()) {
+        server_thread_.join();
+    }
 }
 
 void JsonReporter::saveReport(const fs::path& path) {
@@ -37,7 +38,7 @@ void JsonReporter::clearJsonData() {
 }
 
 bool JsonReporter::isValidExtension(const std::string& ext) const {
-    return extensions_set_.count(ext) > 0;
+    return extensions_.count(ext) > 0;
 }
 
 bool JsonReporter::isAudio(const fs::path& file_extension) const {
@@ -54,32 +55,28 @@ bool JsonReporter::isImage(const fs::path& file_extension) const {
 
 
 bool JsonReporter::isMediaType(const fs::path& file_extension, const std::string& mediatype) const {
-    if (!extensions_json_.contains(mediatype) && extensions_json_[mediatype].is_array()) {
+    auto it = extensions_.find(file_extension.string());
+    if (it == extensions_.end()) {
         throw std::runtime_error(mediatype + " not found in extensions json");
     }
-    for (const auto& media_ext : extensions_json_[mediatype]) {
-        if (file_extension.string() == media_ext.get<std::string>()) {
-            return true;
-        }
-    }
-    return false;
+    
+    return mediatype == it->second;
 }
 
-
-nlohmann::json JsonReporter::readExtensions(const std::string& filepath) {
+void JsonReporter::validateExtensionSet(
+    const std::string& filepath
+) {
     std::ifstream file(filepath);
     if (!file.is_open()) {
         throw std::runtime_error("Cannot open file: " + filepath);
     }
     
-    return nlohmann::json::parse(file);
-}
-
-void JsonReporter::validateExtensionSet() {
-    extensions_set_.clear();
-    for (const auto& [media_category, ext_list] : extensions_json_.items()) {
+    nlohmann::json ext_json = nlohmann::json::parse(file);
+    
+    extensions_.clear();
+    for (const auto& [media_category, ext_list] : ext_json.items()) {
         for (const auto& ext : ext_list) {
-            extensions_set_.insert(ext.get<std::string>());
+            extensions_[ext.get<std::string>()] = media_category;
         }
     }
 }

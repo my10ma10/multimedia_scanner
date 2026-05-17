@@ -2,8 +2,16 @@
 
 #include <iostream>
 #include <string>
+#include <csignal>
+
+void signal_handler(int) {
+    g_running = false;
+}
 
 int main(int argc, char* argv[]) {
+    // std::signal(SIGINT, signal_handler);
+    // std::signal(SIGTERM, signal_handler);
+
     if (argc < 3) {
         std::cout << "Too few arguments\n";
         throw std::runtime_error("Expected period format in seconds and dir path");
